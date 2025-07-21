@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT CSE Toolkit - 40 Motores de Búsqueda Personalizados</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'American Typewriter', 'Courier New', 'Lucida Console', Monaco, monospace;
+            line-height: 1.6;
+            color: #333;
+            background: #ffffff;
+            min-height: 100vh;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+        
+        .header {
+            background: #000000;
+            color: #ffffff;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 0.95rem;
+            font-weight: 400;
+            opacity: 0.8;
+            letter-spacing: 0.3px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .search-section {
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 2px solid #e5e5e5;
+            font-size: 1rem;
+            font-weight: 400;
+            font-family: inherit;
+            background: transparent;
+            transition: border-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #000000;
+        }
+        
+        .search-input::placeholder {
+            color: #555;
+            font-weight: 400;
+            font-family: inherit;
+        }
+        
+        .instructions {
+            background: #f8f8f8;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-left: 3px solid #000000;
+        }
+        
+        .instructions h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        
+        .instructions p {
+            font-size: 0.9rem;
+            color: #444;
+            font-weight: 300;
+            margin-bottom: 8px;
+        }
+        
+        .category {
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #f0f0f0;
+            opacity: 0;
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        .category:last-child {
+            border-bottom: none;
+        }
+        
+        .category h2 {
+            color: #000;
+            margin-bottom: 25px;
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+        
+        .category h2::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 30px;
+            height: 1px;
+            background: #000000;
+        }
+        
+        .cse-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .cse-item {
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid #e5e5e5;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .cse-item:hover {
+            border-color: #000000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .cse-item h3 {
+            color: #000;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        
+        .cse-item p {
+            color: #444;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+        
+        .cse-link {
+            display: inline-block;
+            background: #000000;
+            color: #ffffff;
+            padding: 8px 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .cse-link:hover {
+            background: #333333;
+        }
+        
+        .footer {
+            background: #f8f8f8;
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .footer p {
+            color: #444;
+            font-size: 0.85rem;
+            font-weight: 300;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .search-help {
+            color: #555;
+            font-size: 0.8rem;
+            font-weight: 300;
+            margin-top: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.6rem;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+            
+            .cse-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .cse-item {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .header p {
+                font-size: 0.85rem;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .instructions {
+                padding: 15px;
+            }
+            
+            .category h2 {
+                font-size: 1.1rem;
+            }
+            
+            .cse-item {
+                padding: 12px;
+            }
+            
+            .cse-item h3 {
+                font-size: 0.9rem;
+            }
+            
+            .cse-item p {
+                font-size: 0.8rem;
+            }
+            
+            .cse-link {
+                padding: 6px 15px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        .cse-item:active {
+            transform: translateY(1px);
+        }
+        
+        .search-input:focus + .search-help {
+            color: #000;
+        }
+        
+        .category:nth-child(1) { animation-delay: 0.1s; }
+        .category:nth-child(2) { animation-delay: 0.2s; }
+        .category:nth-child(3) { animation-delay: 0.3s; }
+        .category:nth-child(4) { animation-delay: 0.4s; }
+        .category:nth-child(5) { animation-delay: 0.5s; }
+        .category:nth-child(6) { animation-delay: 0.6s; }
+        .category:nth-child(7) { animation-delay: 0.7s; }
+        .category:nth-child(8) { animation-delay: 0.8s; }
+        .category:nth-child(9) { animation-delay: 0.9s; }
+        .category:nth-child(10) { animation-delay: 1.0s; }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>OSINT CSE Toolkit</h1>
+            <p>40 Motores de Búsqueda Personalizados para Investigación OSINT</p>
+        </div>
+        
+        <div class="content">
+            <div class="instructions">
+                <h3>Instrucciones de Uso</h3>
+                <p>Haz clic en cualquier enlace para abrir el motor de búsqueda especializado. Cada uno está optimizado para encontrar tipos específicos de información.</p>
+                <p>Para búsquedas de email, pon el dominio entre comillas. Para GitHub, combina lenguajes de programación con ubicaciones.</p>
+            </div>
+            
+            <div class="search-section">
+                <input type="text" class="search-input" placeholder="Buscar un CSE específico..." id="searchInput">
+                <div class="search-help">Filtra los motores de búsqueda por nombre o descripción</div>
+            </div>
+            
+            <div class="category" data-category="generales">
+                <h2>Búsquedas Generales</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="buscar todo sin captcha general">
+                        <h3>Buscar Todo (Sin Captchas)</h3>
+                        <p>Búsqueda general sin interrupciones de captcha. Ideal para investigaciones extensas.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:ga1sgh4douu#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="buscador personas person finder">
+                        <h3>Buscador de Personas</h3>
+                        <p>Motor general para encontrar información sobre personas específicas.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:ajtwpl65mma" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="localizador listas directorios">
+                        <h3>Localizador de Listas</h3>
+                        <p>Encuentra listas específicas y directorios en línea.</p>
+                        <a href="https://cse.google.com/cse?cx=009679435902400177945:py5qnxxmayc" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="documentos">
+                <h2>Documentos y Archivos</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="buscador documentos document finder">
+                        <h3>Buscador de Documentos</h3>
+                        <p>Encuentra documentos específicos almacenados públicamente en la web.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:nudphlkt3p4#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="documentos almacenamiento storage drive dropbox">
+                        <h3>Documentos - Almacenamiento</h3>
+                        <p>Busca en sitios de almacenamiento de documentos como Google Drive público, Dropbox, etc.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:awjijlwzhjs#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="tipos archivos extensiones pdf doc xls">
+                        <h3>Tipos de Archivos</h3>
+                        <p>Busca archivos específicos por extensión (PDF, DOC, XLS, etc.).</p>
+                        <a href="https://booleanstrings.com/file-types/#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="almacenamiento google storage">
+                        <h3>Almacenamiento de Google</h3>
+                        <p>Encuentra archivos almacenados públicamente en Google Storage.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:9eryzpq3z3a#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="conjuntos datos datasets investigacion">
+                        <h3>Conjuntos de Datos</h3>
+                        <p>Encuentra conjuntos de datos académicos y de investigación.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:ukjqayb6rem#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="redes-profesionales">
+                <h2>Redes Profesionales</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="rayos x linkedin xray busqueda avanzada">
+                        <h3>Rayos X LinkedIn</h3>
+                        <p>Fórmula actual y correcta para búsquedas avanzadas en LinkedIn evitando restricciones.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:yhgelicr8sp#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="linkedin paises countries filtro">
+                        <h3>LinkedIn por Países</h3>
+                        <p>Busca perfiles de LinkedIn filtrados por países específicos.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:ltkch1b1d-a#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="linkedin informacion contacto emails telefonos">
+                        <h3>LinkedIn - Información de Contacto</h3>
+                        <p>Encuentra información de contacto en perfiles de LinkedIn.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:9hzrh7r-6qa#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="linkedin idiomas competencias linguisticas">
+                        <h3>LinkedIn - Competencias en Idiomas</h3>
+                        <p>Busca profesionales en LinkedIn por competencias en idiomas específicos.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:dtrunj0sn4m#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="xing rayos x busqueda avanzada profesional">
+                        <h3>Rayos X XING</h3>
+                        <p>Búsquedas avanzadas en la red profesional XING.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:o5t47jctrh8#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="curriculums">
+                <h2>Currículums y Portfolios</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="curriculums ocultos hiddenresumes">
+                        <h3>Currículums Ocultos</h3>
+                        <p>Especializado en encontrar currículums que no aparecen en búsquedas convencionales.</p>
+                        <a href="https://hiddenresumes.com" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="curriculum vitae cv profesional">
+                        <h3>Curriculum Vitae</h3>
+                        <p>Motor especializado para encontrar CVs y currículums vitae.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:8klwqiq9huu" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="portfolios behance creativos diseño">
+                        <h3>Portfolios Creativos - Behance</h3>
+                        <p>Encuentra portfolios y currículums creativos en Behance.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:tmizbwud4ba#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="curriculums desarrolladores programadores tech">
+                        <h3>Currículums de Desarrolladores</h3>
+                        <p>Encuentra currículums y perfiles de desarrolladores.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:frzo6adfjso#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="tecnologia">
+                <h2>Tecnología y Desarrollo</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="repositorios github codigo programacion">
+                        <h3>Repositorios de GitHub</h3>
+                        <p>Busca repositorios de GitHub por lenguajes de programación y ubicación.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:_gfzqmrocfs#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="github rayos x desarrolladores proyectos">
+                        <h3>Rayos X GitHub</h3>
+                        <p>Búsquedas avanzadas en GitHub para encontrar desarrolladores y proyectos específicos.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:kwwjwj9bliu#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="perfiles dev.to articulos desarrolladores">
+                        <h3>Perfiles Dev.to</h3>
+                        <p>Busca perfiles y artículos en la plataforma Dev.to.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:t9wbadbno5o#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="codigo programacion ejemplos snippets">
+                        <h3>Código de Programación</h3>
+                        <p>Busca código específico y ejemplos de programación.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:4pw19akdthg#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="contactos">
+                <h2>Emails y Contactos</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="descubrir formato emails corporativos dominios">
+                        <h3>Descubrir Formato de Emails</h3>
+                        <p>Descubre patrones de emails corporativos. Ingresa el dominio entre comillas.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:tmv95brsssm#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="emails curriculums documentos profesionales">
+                        <h3>Emails en Currículums</h3>
+                        <p>Encuentra emails dentro de currículums y documentos profesionales.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:bqcc5oa64z8#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="informacion contacto personas especificas">
+                        <h3>Encontrar Información de Contacto</h3>
+                        <p>Motor especializado para encontrar información de contacto de personas específicas.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:7ne6umshaqs#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="academico">
+                <h2>Académico e Investigación</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="perfiles researchgate investigadores academicos">
+                        <h3>Perfiles de ResearchGate</h3>
+                        <p>Busca perfiles de investigadores en la plataforma ResearchGate.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:tgrkurupfjk#gsc.tab=0&gsc.q=ai&gsc.sort=" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="google scholar perfiles academicos publicaciones">
+                        <h3>Perfiles de Google Scholar</h3>
+                        <p>Encuentra perfiles académicos y publicaciones en Google Scholar.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:aw_xfh_kydo#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="diversidad">
+                <h2>Diversidad e Inclusión</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="mejor busqueda diversidad inclusion">
+                        <h3>Mejor Búsqueda de Diversidad</h3>
+                        <p>Motor optimizado para búsquedas relacionadas con diversidad e inclusión.</p>
+                        <a href="https://booleanstrings.com/my-best-diversity-custom-search-engine/#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="perfiles mujeres profesionales femeninas">
+                        <h3>Perfiles de Mujeres</h3>
+                        <p>Encuentra perfiles profesionales de mujeres en diversas plataformas.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:admephnomn4#gsc.tab=0&gsc.q=copywriter&gsc.sort=" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="mujeres linkedin perfiles femeninos">
+                        <h3>Mujeres en LinkedIn</h3>
+                        <p>Búsqueda especializada de perfiles femeninos en LinkedIn.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:6lm5zrqbq1p#gsc.tab=0&gsc.q=h&gsc.sort=" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="veteranos militares busqueda refinamientos">
+                        <h3>Búsqueda de Veteranos</h3>
+                        <p>Encuentra perfiles de veteranos militares con opciones de refinamiento.</p>
+                        <a href="https://cse.google.com/cse?cx=012951739560700154499:c9hqakgfhvr#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="asociaciones diversidad organizaciones inclusion">
+                        <h3>Asociaciones de Diversidad</h3>
+                        <p>Busca asociaciones y organizaciones relacionadas con diversidad.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:cvykemfonf4#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="investigadoras femeninas researchgate mujeres ciencia">
+                        <h3>Investigadoras Femeninas - ResearchGate</h3>
+                        <p>Búsqueda especializada de investigadoras femeninas en ResearchGate.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:tgrkurupfjk#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="ponentes femeninas speakerhub mujeres conferencias">
+                        <h3>Ponentes Femeninas - SpeakerHub</h3>
+                        <p>Encuentra ponentes y speakers femeninas en SpeakerHub.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:zeswum8yjzw#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="profesionales salud femeninas wellness mujeres">
+                        <h3>Profesionales Femeninas de Salud - Wellness</h3>
+                        <p>Búsqueda especializada de profesionales femeninas de la salud en Wellness.com.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:jpiueh_wtkc&q=psychiatrist%20tampa%20fl#gsc.tab=0&gsc.q=psychiatrist%20tampa%20fl&gsc.page=1" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="profesiones">
+                <h2>Profesiones Específicas</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="ofertas trabajo empleo oportunidades laborales">
+                        <h3>Ofertas de Trabajo</h3>
+                        <p>Encuentra ofertas de trabajo y oportunidades laborales.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:hfijfsplv8r" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="contadores profesionales contables accountants">
+                        <h3>Contadores</h3>
+                        <p>Motor especializado para encontrar contadores y profesionales contables.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:txoliumsmne" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="medicos doctores profesionales salud physicians">
+                        <h3>Médicos</h3>
+                        <p>Encuentra médicos y profesionales de la salud.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:pxttsuq7pw4#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="hablantes idiomas language speakers linguistico">
+                        <h3>Hablantes de Idiomas</h3>
+                        <p>Encuentra personas que hablan idiomas específicos.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:dtrunj0sn4m#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category" data-category="empresarial">
+                <h2>Información Empresarial</h2>
+                <div class="cse-grid">
+                    <div class="cse-item" data-search="fortune 100 empresas grandes corporaciones">
+                        <h3>Fortune 100</h3>
+                        <p>Busca información relacionada con las empresas Fortune 100.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:xcvjlqko6es#gsc.tab=0" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                    
+                    <div class="cse-item" data-search="miembros meetup grupos eventos networking">
+                        <h3>Miembros de Meetup</h3>
+                        <p>Busca miembros y participantes de grupos Meetup.</p>
+                        <a href="https://cse.google.com/cse?cx=009462381166450434430:2qdc5pavu8q" class="cse-link" target="_blank">Buscar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>OSINT CSE Toolkit</p>
+        </div>
+    </div>
+    
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const categories = document.querySelectorAll('.category');
+        const cseItems = document.querySelectorAll('.cse-item');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                categories.forEach(cat => cat.style.display = 'block');
+                cseItems.forEach(item => item.style.display = 'block');
+                return;
+            }
+            
+            let hasVisibleItems = {};
+            
+            cseItems.forEach(item => {
+                const searchData = item.getAttribute('data-search');
+                const itemText = item.textContent.toLowerCase();
+                const matches = searchData.includes(searchTerm) || itemText.includes(searchTerm);
+                
+                if (matches) {
+                    item.style.display = 'block';
+                    const parentCategory = item.closest('.category');
+                    const categoryName = parentCategory.getAttribute('data-category');
+                    hasVisibleItems[categoryName] = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            categories.forEach(cat => {
+                const categoryName = cat.getAttribute('data-category');
+                if (hasVisibleItems[categoryName]) {
+                    cat.style.display = 'block';
+                } else {
+                    cat.style.display = 'none';
+                }
+            });
+        });
+        
+        document.querySelectorAll('.cse-link').forEach(link => {
+            link.addEventListener('click', function() {
+                this.style.background = '#333333';
+                setTimeout(() => {
+                    this.style.background = '#000000';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
